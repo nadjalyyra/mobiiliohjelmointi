@@ -1,63 +1,91 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+} from 'react-native';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+export default function Index() {
+  const [number1, setNumber1] = useState('');
+  const [number2, setNumber2] = useState('');
+  const [result, setResult] = useState('');
+  const [error, setError] = useState('');
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+  const calculate = (operation: string) => {
+    // Tarkistetaan, ettei kentät ole tyhjiä
+    if (number1.trim() === '' || number2.trim() === '') {
+      setError('Syötä molempiin kenttiin numero.');
+      setResult('');
+      return;
+    }
+
+    // TextInput antaa pelkkää tekstiä, niin muutetaan tämä numeroksi 
+    const num1 = Number(number1);
+    const num2 = Number(number2);
+
+    // Varmistus, että kyseessä on oikeasti numero
+    if (isNaN(num1) || isNaN(num2)) {
+      setError('Syötä vain numeroita.');
+      setResult('');
+      return;
+    }
+
+    // All good -> poistetaan virheilmoitus
+    setError('');
+
+    if (operation === '+') {
+      setResult(String(num1 + num2));
+    }
+
+    if (operation === '-') {
+      setResult(String(num1 - num2));
+    }
+  };
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.container}>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <Text style={styles.title}>Laskin</Text>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+      <TextInput
+        style={styles.input}
+        placeholder="Ensimmäinen numero"
+        keyboardType="numeric"
+        value={number1}
+        onChangeText={setNumber1}
+      />
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+      <TextInput
+        style={styles.input}
+        placeholder="Toinen numero"
+        keyboardType="numeric"
+        value={number2}
+        onChangeText={setNumber2}
+      />
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <View style={styles.buttons}>
+        <Button
+          title="+"
+          onPress={() => calculate('+')}
+        />
+
+        <Button
+          title="-"
+          onPress={() => calculate('-')}
+        />
+      </View>
+
+      {error !== '' && (
+        <Text style={styles.error}>{error}</Text>
+      )}
+
+      <Text style={styles.result}>
+        Tulos: {result}
+      </Text>
+
+    </View>
   );
 }
 
@@ -65,34 +93,37 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
     alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+    padding: 20,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
+
   title: {
-    textAlign: 'center',
+    fontSize: 28,
+    marginBottom: 30,
   },
-  code: {
-    textTransform: 'uppercase',
+
+  input: {
+    width: '80%',
+    borderWidth: 1,
+    borderColor: 'gray',
+    padding: 10,
+    marginBottom: 15,
+    fontSize: 18,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+
+  buttons: {
+    flexDirection: 'row',
+    gap: 20,
+    marginTop: 10,
+  },
+
+  result: {
+    fontSize: 22,
+    marginTop: 30,
+  },
+
+  error: {
+    color: 'red',
+    marginTop: 20,
   },
 });
